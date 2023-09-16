@@ -3,8 +3,8 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux/es/exports";
-import { connectWallet } from "../../redux/EOAConnectSlice";
-import { AppDispatch } from "@/redux/store";
+import { connectWallet } from "../../../redux/EOAConnectSlice";
+import { AppDispatch, store } from "@/redux/store";
 function page() {
   const dispatch = useDispatch<AppDispatch>();
 

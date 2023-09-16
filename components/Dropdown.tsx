@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
@@ -12,11 +12,21 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Dropdown() {
+export default function Dropdown({ setNetwork }) {
   const [selected, setSelected] = useState(networks[0]);
 
+  useEffect(() => {
+    setNetwork(networks[0].name);
+  }, []);
+
+  const setNetworks = (network: Object) => {
+    setSelected(network);
+    setNetwork(network.name);
+    console.log(selected);
+  };
+
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox value={selected} onChange={setNetworks}>
       {({ open }) => (
         <>
           <div className="relative mt-2">
