@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import axios from "../app/axios";
-import { store } from "@/redux/store";
 
 interface txnInterface {
   transactionType: string;
@@ -11,16 +16,33 @@ interface txnInterface {
   __v: number;
 }
 
-function TransactionList({ address }) {
+interface transactionListInterface {
+  address: string;
+  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
+  setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
+  handleSignTxnComponent: boolean;
+}
+
+function TransactionList({
+  address,
+  setTxnPayload,
+  setHandleSignTxnComponent,
+  handleSignTxnComponent,
+}: transactionListInterface) {
   const [txnData, setTxnData] = useState<Array<txnInterface>>([]);
 
-  const fetchData = async (address) => {
+  const fetchData = async (address: string) => {
     try {
       const req = await axios.get(`/api/txn/${address}`);
       setTxnData(req.data.transactions);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleTxnComponent = (txnPayload: txnInterface) => {
+    setHandleSignTxnComponent(!handleSignTxnComponent);
+    setTxnPayload(txnPayload);
   };
 
   useEffect(() => {
@@ -36,6 +58,7 @@ function TransactionList({ address }) {
         <div className="min-h-[200px] w-full border-t-2 border-blue-100 border-opacity-10 rounded-xl">
           {txnData.map((txn, index) => (
             <div
+              onClick={() => handleTxnComponent(txn)}
               key={index}
               className="flex flex-col m-3 p-2 rounded-xl bg-slate-900 cursor-pointer hover:bg-slate-800"
             >

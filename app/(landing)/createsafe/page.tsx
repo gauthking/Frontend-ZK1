@@ -24,12 +24,10 @@ function page() {
   const router = useRouter();
 
   useEffect(() => {
-    dispatch(connectWallet()).then(() => {
-      const newAddress = store.getState().eoaConnect.address;
-      setOwners([{ address: newAddress, id: 0 }]);
-      console.log(owners);
-    });
-  }, []);
+    const newAddress = store.getState().eoaConnect.address;
+    setOwners([{ address: newAddress, id: 0 }]);
+    console.log(owners);
+  }, [address]);
 
   console.log(ownerLength);
   const createSafe = async () => {

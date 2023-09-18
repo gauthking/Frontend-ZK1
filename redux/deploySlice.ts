@@ -34,7 +34,6 @@ export const deployAll = createAsyncThunk(
             let social = "";
             let safeAccountAddress = "";
 
-
             try {
                 // first deploying guardianStorage contract
                 const deployGuardianStorage = await contractDeployer.create(salt, guardianStorageBytecodeHash, "0x", {
@@ -49,7 +48,6 @@ export const deployAll = createAsyncThunk(
                 console.log("Error deploying guardian storage contract - ", error)
             }
 
-
             // second .. deploying social recovery module
             try {
                 const socialRecoveryConstructor = [guardian, "0"];
@@ -63,17 +61,13 @@ export const deployAll = createAsyncThunk(
                 console.log("Social Recovery Module Deployed to : ", socialAddress);
             } catch (error) {
                 console.log("Error deploying social recovery contract - ", error)
-
             }
-
 
             // third.. deploying accounts using AAFactory contract
             try {
                 const aaFactory = new ethers.Contract(aaFactoryAddress, AAArtifact.abi, signer);
                 // const owner1 = "0x9E5211cF1AD3D3BF1A5159EF29E8810b413383b0";
                 // const owner2 = "0xF4481CA047E47B47a7677A27ed9C1157c10d27Fb";
-
-
                 const createAccounts = await aaFactory.deployAccount(salt, owners, "2", {
                     gasLimit: 5000000
                 });
@@ -81,13 +75,10 @@ export const deployAll = createAsyncThunk(
                 safeAccountAddress = createAccountsReceipt.contractAddress;
                 console.log(`Accounts - [${owners[0]} and ${owners[1]}] deployed using aaFactory contract at the address - ${safeAccountAddress}`);
                 alert(`Accounts - [${owners[0]} and ${owners[1]}] deployed using aaFactory contract at the address - ${safeAccountAddress}`);
-
             } catch (error) {
                 console.log("Error deploying accounts - ", error)
-
             }
             return { guardian, social, safeAccountAddress };
-
         }
     }
 );
