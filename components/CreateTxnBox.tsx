@@ -1,5 +1,4 @@
 "use client";
-import { store } from "@/redux/store";
 import axios from "../app/axios";
 import React, { useState } from "react";
 
@@ -29,6 +28,7 @@ function CreateTxnBox({ safeAddress, eoaAddress }: CreateTxnBoxProps) {
         paymasterEnable: paymaster,
       });
       console.log("Transaction Created - ", postTxn);
+      window.location.reload();
       setLoader(false);
     } catch (error) {
       console.log(

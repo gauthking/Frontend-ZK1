@@ -57,6 +57,10 @@ function SignTxnBox({
         txnAmount: txnData?.txnAmount,
       });
       console.log(signaturePost);
+      if (signaturePost.status === 200) {
+        alert("Signed Transaction Succesfully. Click Ok to refresh the page");
+        window.location.reload();
+      }
     } catch (error) {
       console.log("An error occured while signing the tranasction - ", error);
     }
@@ -117,7 +121,7 @@ function SignTxnBox({
                 s.signerAddress === store.getState().eoaConnect.address
             )}
             onClick={() => handleSignTransaction()}
-            className="mt-4 rounded-xl p-4 border-2"
+            className="mt-4 rounded-xl p-4 border-2 hover:bg-blue-950 active:bg-slate-800"
           >
             Sign
           </button>
