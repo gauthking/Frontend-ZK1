@@ -51,7 +51,6 @@ function CreateTxnBox({ safeAddress, eoaAddress }: CreateTxnBoxProps) {
             className="bg-blue-950 rounded-lg p-2 font-semibold w-fit"
           >
             <option value="none">txn type</option>
-            <option value="transfer">Transfer</option>
             <option value="mint">Mint</option>
           </select>
         </div>
