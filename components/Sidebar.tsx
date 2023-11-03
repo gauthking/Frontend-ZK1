@@ -23,7 +23,7 @@ interface sidebarProps {
   handleCreateTxnComponent: boolean;
   handleSignTxnComponent: boolean;
   setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
-  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
+  setTxnPayload: Dispatch<SetStateAction<txnInterface>>;
 }
 function Sidebar({
   address,

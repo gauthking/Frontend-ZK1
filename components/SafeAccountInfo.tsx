@@ -2,7 +2,13 @@
 
 import React, { useState } from "react";
 
-function SafeAccountInfo({ address, safeName }) {
+function SafeAccountInfo({
+  address,
+  safeName,
+}: {
+  address: string;
+  safeName: string;
+}) {
   const safe = address;
   const [slicedAddress, setSlicedAddress] = useState(safe.slice(0, 12) + "...");
   const handleHoverAddress = () => {

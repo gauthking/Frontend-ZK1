@@ -46,7 +46,7 @@ function Account() {
   };
 
   useEffect(() => {
-    const newAddress = store.getState().eoaConnect.address;
+    const newAddress: any = store.getState().eoaConnect.address;
     // console.log(newAddress);
     getAccounts(newAddress);
   }, [address]);

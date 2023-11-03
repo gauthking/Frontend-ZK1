@@ -45,8 +45,8 @@ interface scrSchemaInterface {
   smartAccount: string;
   enabled: boolean;
   enabledBy: string;
-  signatures: Array<string>;
-  signedBy: Array<string>;
+  signatures: Array<string | undefined | null>;
+  signedBy: Array<string | undefined | null>;
   _id: string;
   __v: number;
 }
@@ -79,7 +79,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
+  const clientId: any = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
 
   useEffect(() => {
     const init = async () => {
@@ -174,7 +174,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
       }
     };
     init();
-    const newAddress = store.getState().eoaConnect.address;
+    const newAddress: any = store.getState().eoaConnect.address;
     setEoaAddress(newAddress);
     checkSCRStatus();
     checkSmartAccountBalance();
@@ -199,10 +199,8 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     const balance = await provider.getBalance(params.slug[1]);
     console.log("bal", balance);
     const erc20ContractAddress = "0x4A0F0ca3A08084736c0ef1a3bbB3752EA4308bD3";
-    const whale_signer = new Wallet(
-      process.env.NEXT_PUBLIC_WHALE_PRIV_KEY,
-      provider
-    );
+    const priv_key_whale: any = process.env.NEXT_PUBLIC_WHALE_PRIV_KEY;
+    const whale_signer = new Wallet(priv_key_whale, provider);
     const erc20Contract = new ethers.Contract(
       erc20ContractAddress,
       erc20ABI.abi,
@@ -256,7 +254,8 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
       scrmAddress: scrAddress,
     });
     console.log("txn hash", getTxnHash);
-    const signer = new Wallet(store.getState().eoaConnect.pkey);
+    const signer_pkey: any = store.getState().eoaConnect.pkey;
+    const signer = new Wallet(signer_pkey);
     const signature = ethers.utils.joinSignature(
       signer._signingKey().signDigest(getTxnHash.data.scrTxnHash)
     );

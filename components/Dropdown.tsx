@@ -12,14 +12,14 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Dropdown({ setNetwork }) {
+export default function Dropdown({ setNetwork }: any) {
   const [selected, setSelected] = useState(networks[0]);
 
   useEffect(() => {
     setNetwork(networks[0].name);
   }, []);
 
-  const setNetworks = (network: Object) => {
+  const setNetworks = (network: any) => {
     setSelected(network);
     setNetwork(network.name);
     console.log(selected);

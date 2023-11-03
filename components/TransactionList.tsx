@@ -12,7 +12,10 @@ interface txnInterface {
   transactionType: string;
   requiredThreshold: number;
   currentSignCount: number;
-  signedOwners: [];
+  signedOwners: any;
+  txnAmount: number;
+  recipientAddress: string;
+  paymaster: boolean;
   _id: string;
   __v: number;
 }
@@ -20,7 +23,7 @@ interface txnInterface {
 interface transactionListInterface {
   address: string;
   threshold: number;
-  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
+  setTxnPayload: Dispatch<SetStateAction<txnInterface>>;
   setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
   handleSignTxnComponent: boolean;
 }

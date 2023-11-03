@@ -20,7 +20,7 @@ import { TorusWalletConnectorPlugin } from "@web3auth/torus-wallet-connector-plu
 function Navbar() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn } = useSelector((state: RootState) => state.eoaConnect);
-  const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
+  const clientId: any = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
 
   const [torusPlugin, setTorusPlugin] =
     useState<TorusWalletConnectorPlugin | null>(null);

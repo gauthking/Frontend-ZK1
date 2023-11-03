@@ -24,7 +24,7 @@ const CreateSafePage = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    const newAddress = store.getState().eoaConnect.address;
+    const newAddress: any = store.getState().eoaConnect.address;
     console.log(newAddress);
     setOwners([{ address: newAddress, id: 0 }]);
     // console.log(owners);
@@ -75,7 +75,7 @@ const CreateSafePage = () => {
     }
   };
 
-  const handleOwnerAddressChange = (e, index) => {
+  const handleOwnerAddressChange = (e: any, index: any) => {
     const newOwners = [...owners];
     newOwners[index] = { ...newOwners[index], address: e.target.value };
     setOwners(newOwners);
@@ -138,7 +138,7 @@ const CreateSafePage = () => {
                 </button>
               </div>
               <div className="setownerlist flex flex-col gap-2">
-                {owners?.map((owner, index) => (
+                {owners?.map((owner: any, index) => (
                   <div
                     key={index}
                     className="defaultowner mx-2 bg-slate-800 p-2 rounded-xl flex gap-2"

@@ -2,10 +2,8 @@
 import { RootState } from "@/redux/store";
 import Link from "next/link";
 import { useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter();
   const { isLoggedIn } = useSelector((state: RootState) => state.eoaConnect);
   console.log("logged in - ", isLoggedIn);
   return (

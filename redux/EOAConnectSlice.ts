@@ -10,7 +10,7 @@ declare global {
 
 interface ConnectState {
     isLoggedIn: boolean;
-    address: string | null;
+    address: string | null | undefined;
     connectLoader: boolean;
     provider: any;
     web3Auth: Web3Auth | null;

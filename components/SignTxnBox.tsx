@@ -42,7 +42,8 @@ function SignTxnBox({
       //   method: "eth_sign",
       //   params: [eoaAddress, currentTxnHash.data.message],
       // });
-      const signer = new Wallet(store.getState().eoaConnect.pkey);
+      const signer_pkey: any = store.getState().eoaConnect.pkey;
+      const signer = new Wallet(signer_pkey);
       const signature = ethers.utils.joinSignature(
         signer._signingKey().signDigest(currentTxnHash.data.message)
       );
@@ -93,7 +94,7 @@ function SignTxnBox({
             </p>
             {txnData?.signedOwners.length !== 0 ? (
               <div className="flex flex-col">
-                {txnData?.signedOwners.map((owner, index) => (
+                {txnData?.signedOwners.map((owner: any, index: any) => (
                   <p
                     key={index}
                     className="font-bold p-1 bg-slate-900 rounded-xl my-2"
@@ -108,11 +109,12 @@ function SignTxnBox({
           </div>
         </div>
         {!txnData?.signedOwners.some(
-          (s) => s.signerAddress === store.getState().eoaConnect.address
+          (s: any) => s.signerAddress === store.getState().eoaConnect.address
         ) ? (
           <button
             disabled={txnData?.signedOwners.some(
-              (s) => s.signerAddress === store.getState().eoaConnect.address
+              (s: any) =>
+                s.signerAddress === store.getState().eoaConnect.address
             )}
             onClick={() => handleSignTransaction()}
             className="mt-4 rounded-xl p-4 border-2"
@@ -120,7 +122,7 @@ function SignTxnBox({
             Sign
           </button>
         ) : txnData?.signedOwners.some(
-            (s) => s.signerAddress === store.getState().eoaConnect.address
+            (s: any) => s.signerAddress === store.getState().eoaConnect.address
           ) ? (
           "User has already signed"
         ) : (

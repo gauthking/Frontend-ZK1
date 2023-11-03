@@ -7,8 +7,8 @@ import { store } from './store';
 const guardianStorageBytecodeHash = process.env.NEXT_PUBLIC_GUARDIANSTORAGEBYTECODEHASH;
 const socialRecoveryModuleBytecodeHash = process.env.NEXT_PUBLIC_SCRBYTECODEHASH;
 
-const contractDeployerAddress = process.env.NEXT_PUBLIC_CONTRACTDEPLOYERADDRESS;
-const aaFactoryAddress = process.env.NEXT_PUBLIC_AAFACTORYADDRESS;
+const contractDeployerAddress: any = process.env.NEXT_PUBLIC_CONTRACTDEPLOYERADDRESS;
+const aaFactoryAddress: any = process.env.NEXT_PUBLIC_AAFACTORYADDRESS;
 
 interface deployments {
     guardianAddress: string;
@@ -30,7 +30,8 @@ export const deployAll = createAsyncThunk(
         console.log(owners)
         const salt = ethers.constants.HashZero;
         const provider = new ethers.providers.JsonRpcProvider("https://testnet.era.zksync.dev");
-        const wallet = new ethers.Wallet(store.getState().eoaConnect.pkey);
+        const wallet_pkey: any = store.getState().eoaConnect.pkey
+        const wallet = new ethers.Wallet(wallet_pkey);
         const signer = wallet.connect(provider);
         const balance = await provider.getBalance(wallet.address);
         const minBalance = ethers.utils.parseEther("0.002");
@@ -39,8 +40,9 @@ export const deployAll = createAsyncThunk(
                 "Your wallet balance is below 0.002 ETH. Do you want to transfer some funds from a WHALE wallet?"
             );
             if (confirmTransfer) {
+                const whale_pkey: any = process.env.NEXT_PUBLIC_WHALE_PRIV_KEY;
                 const whale_signer = new ethers.Wallet(
-                    process.env.NEXT_PUBLIC_WHALE_PRIV_KEY,
+                    whale_pkey,
                     provider
                 );
                 console.log(whale_signer)
