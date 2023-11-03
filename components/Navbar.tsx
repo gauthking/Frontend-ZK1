@@ -61,12 +61,21 @@ function Navbar() {
           mfaLevel: "optional",
         },
         adapterSettings: {
-          uxMode: "redirect", // "redirect" | "popup"
+          network: "testnet",
+          uxMode: "popup", // "redirect" | "popup"
           whiteLabel: {
             logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
             logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
             defaultLanguage: "en", // en, de, ja, ko, zh, es, fr, pt, nl
             mode: "dark", // whether to enable dark, light or auto mode. defaultValue: auto [ system theme]
+          },
+          loginConfig: {
+            google: {
+              verifier: "zkwallet-new-google-verifier",
+              typeOfLogin: "google",
+              clientId:
+                "651172170338-fmndjlrjdg33n6lm5aivdie64u1sd5e8.apps.googleusercontent.com", // this should be the google client id. pls pass it
+            },
           },
           mfaSettings: {
             deviceShareFactor: {
