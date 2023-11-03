@@ -63,7 +63,7 @@ const style = {
   p: 4,
 };
 
-function page({ params }: { params: { slug: string[] } }) {
+const Page = ({ params }: { params: { slug: string[] } }) => {
   const [handleCreateTxnComponent, setHandleCreateTxnComponent] =
     useState<boolean>(false);
   const [handleSignTxnComponent, setHandleSignTxnComponent] =
@@ -366,8 +366,11 @@ function page({ params }: { params: { slug: string[] } }) {
                 Signed By:
               </p>
               <div className="mx-3 p-2 border-2">
-                {scrPayload.signedBy?.map((owner) => (
-                  <p className="font-semibold text-lg text-slate-100">
+                {scrPayload.signedBy?.map((owner, index) => (
+                  <p
+                    key={index}
+                    className="font-semibold text-lg text-slate-100"
+                  >
                     {owner}
                   </p>
                 ))}
@@ -423,6 +426,6 @@ function page({ params }: { params: { slug: string[] } }) {
       </div>
     </>
   );
-}
+};
 
-export default page;
+export default Page;

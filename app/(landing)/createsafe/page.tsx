@@ -1,14 +1,13 @@
 "use client";
-
-import Dropdown from "@/components/Dropdown";
-import React, { useEffect, useState } from "react";
-import { AppDispatch, RootState, store } from "@/redux/store";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deployAll, setDeployThreshold } from "@/redux/deploySlice";
+import { AppDispatch, RootState, store } from "@/redux/store";
+import Dropdown from "@/components/Dropdown";
 import axios from "../../axios";
 import { useRouter } from "next/navigation";
+import { deployAll, setDeployThreshold } from "@/redux/deploySlice";
 
-function page() {
+const CreateSafePage = () => {
   const [network, setNetwork] = useState<string>("");
   const [safeName, setSafeName] = useState<string>("");
   const [threshold, setThreshold] = useState<string>("0");
@@ -181,6 +180,6 @@ function page() {
       </div>
     </div>
   );
-}
+};
 
-export default page;
+export default CreateSafePage;

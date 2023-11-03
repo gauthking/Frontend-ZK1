@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 import { useSelector } from "react-redux";
 
-function page() {
+const Page = () => {
   const { address } = useSelector((state: RootState) => state.eoaConnect);
 
   return (
@@ -42,6 +42,6 @@ function page() {
       </div>
     </div>
   );
-}
+};
 
-export default page;
+export default Page;

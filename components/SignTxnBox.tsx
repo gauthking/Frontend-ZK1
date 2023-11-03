@@ -93,8 +93,11 @@ function SignTxnBox({
             </p>
             {txnData?.signedOwners.length !== 0 ? (
               <div className="flex flex-col">
-                {txnData?.signedOwners.map((owner) => (
-                  <p className="font-bold p-1 bg-slate-900 rounded-xl my-2">
+                {txnData?.signedOwners.map((owner, index) => (
+                  <p
+                    key={index}
+                    className="font-bold p-1 bg-slate-900 rounded-xl my-2"
+                  >
                     {owner.signerAddress}
                   </p>
                 ))}
