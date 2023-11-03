@@ -1,30 +1,32 @@
 "use client";
 
 import Dropdown from "@/components/Dropdown";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppDispatch, RootState, store } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { deployAll } from "@/redux/deploySlice";
-import { connectWallet } from "@/redux/EOAConnectSlice";
+import { deployAll, setDeployThreshold } from "@/redux/deploySlice";
 import axios from "../../axios";
 import { useRouter } from "next/navigation";
 
 function page() {
   const [network, setNetwork] = useState<string>("");
   const [safeName, setSafeName] = useState<string>("");
+  const [threshold, setThreshold] = useState<string>("0");
   const { address } = useSelector((state: RootState) => state.eoaConnect);
+
   const [owners, setOwners] = useState<
     Array<{ address: string | null; id: number }>
   >([]);
 
   const [ownerLength, setOwnerLength] = useState<number>(1);
-  const dispatch = useDispatch<AppDispatch>();
   console.log(owners);
 
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const newAddress = store.getState().eoaConnect.address;
+    console.log(newAddress);
     setOwners([{ address: newAddress, id: 0 }]);
     console.log(owners);
   }, [address]);
@@ -32,6 +34,7 @@ function page() {
   console.log(ownerLength);
   const createSafe = async () => {
     try {
+      dispatch(setDeployThreshold(threshold));
       let ownerList = [];
       for (let i = 0; i < owners.length; i++) {
         ownerList.push(owners[i].address);
@@ -43,16 +46,18 @@ function page() {
         .post("/api/account/", {
           accountAddress: store.getState().deployContracts.safeAddress,
           accountName: safeName,
-          setThreshold: 2,
+          setThreshold: parseInt(threshold),
           owners: ownerList,
           network: network,
+          socialRecoveryModuleAddress:
+            store.getState().deployContracts.socialRecoveryAddress,
         })
         .then((res) => {
           console.log(res);
           router.push(
             `/dashboard/${safeName}/${
               store.getState().deployContracts.safeAddress
-            }`
+            }/${parseInt(threshold)}`
           );
         });
     } catch (error) {
@@ -82,6 +87,7 @@ function page() {
       .filter((_, i) => i !== index)
       .map((owner, i) => ({ ...owner, id: i }));
     setOwners(newOwners);
+    setOwnerLength(ownerLength - 1);
   };
 
   return (
@@ -108,6 +114,8 @@ function page() {
               </p>
               <input
                 type="text"
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
                 className="p-1 px-3 outline-none bg-gray-900 rounded-xl text-gray-100 font-bold shadow-sm shadow-gray-800 w-1/4"
                 placeholder="1"
               />

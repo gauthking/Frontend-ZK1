@@ -9,7 +9,7 @@ function SafeAccountInfo({ address, safeName }) {
     setSlicedAddress(safe);
   };
   return (
-    <div className="flex gap-10 items-center justify-center z-10 border-b-2 rounded-xl px-2 border-opacity-5 border-blue-50 py-4">
+    <div className="flex gap-10 items-center justify-center z-10 border-b-2 rounded-xl px-2 border-opacity-5 border-blue-50 py-4 relative bottom-3">
       <div className="image">
         <img
           src="https://cdn-icons-png.flaticon.com/128/1177/1177568.png"

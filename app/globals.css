@@ -4,7 +4,6 @@
 
 body {
   background: #010114;
-  
 }
 
 .landingPageLogoShadow {
@@ -14,4 +13,8 @@ body {
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+.slower {
+  animation-duration: 5s;
 }

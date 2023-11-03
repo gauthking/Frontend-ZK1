@@ -1,48 +1,55 @@
+import { store } from "@/redux/store";
 import axios from "../app/axios";
 import { Dispatch, SetStateAction } from "react";
+import { Wallet, ethers } from "ethers";
 
 interface txnInterface {
   transactionType: string;
-  requiredThreshold: number;
   currentSignCount: number;
   signedOwners: any;
   txnAmount: number;
   recipientAddress: string;
+  paymaster: boolean;
   _id: string;
   __v: number;
 }
 
 interface SignTxnBoxProps {
   txnData: txnInterface | undefined;
-  eoaAddress: string | null;
   setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
   safeAddress: string;
+  threshold: number;
 }
 
 function SignTxnBox({
   txnData,
-  eoaAddress,
   setHandleSignTxnComponent,
   safeAddress,
+  threshold,
 }: SignTxnBoxProps) {
-  console.log(txnData);
-  console.log(eoaAddress);
+  console.log("eoaAddress", store.getState().eoaConnect.address);
+  // console.log(store.getState().eoaConnect.address);
   const handleSignTransaction = async () => {
     try {
       const currentTxnHash = await axios.post("/api/txn/getTxHash", {
         safeAddress: safeAddress,
         amount: txnData?.txnAmount,
         recipientAddress: txnData?.recipientAddress,
+        paymasterParams: txnData?.paymaster,
       });
       console.log(currentTxnHash);
-      const ethSignRequest = await window.ethereum.request({
-        method: "eth_sign",
-        params: [eoaAddress, currentTxnHash.data.message],
-      });
-      console.log(ethSignRequest);
+      // const ethSignRequest = await window.ethereum.request({
+      //   method: "eth_sign",
+      //   params: [eoaAddress, currentTxnHash.data.message],
+      // });
+      const signer = new Wallet(store.getState().eoaConnect.pkey);
+      const signature = ethers.utils.joinSignature(
+        signer._signingKey().signDigest(currentTxnHash.data.message)
+      );
+      console.log(signature);
       const signaturePost = await axios.post("/api/txn/signTxn", {
-        signedDigest: ethSignRequest,
-        signerAddress: eoaAddress,
+        signedDigest: signature,
+        signerAddress: store.getState().eoaConnect.address,
         safeAddress: safeAddress,
         txnId: txnData?._id,
         recipientAddress: txnData?.recipientAddress,
@@ -97,10 +104,12 @@ function SignTxnBox({
             )}
           </div>
         </div>
-        {!txnData?.signedOwners.some((s) => s.signerAddress === eoaAddress) ? (
+        {!txnData?.signedOwners.some(
+          (s) => s.signerAddress === store.getState().eoaConnect.address
+        ) ? (
           <button
             disabled={txnData?.signedOwners.some(
-              (s) => s.signerAddress === eoaAddress
+              (s) => s.signerAddress === store.getState().eoaConnect.address
             )}
             onClick={() => handleSignTransaction()}
             className="mt-4 rounded-xl p-4 border-2"
@@ -108,15 +117,15 @@ function SignTxnBox({
             Sign
           </button>
         ) : txnData?.signedOwners.some(
-            (s) => s.signerAddress === eoaAddress
+            (s) => s.signerAddress === store.getState().eoaConnect.address
           ) ? (
           "User has already signed"
         ) : (
           ""
         )}
       </div>
-      {txnData?.requiredThreshold === txnData?.currentSignCount ? (
-        <p>
+      {threshold === txnData?.currentSignCount ? (
+        <p className="font-kanit_bold mt-6 bg-slate-900 p-2 rounded-xl">
           Transaction Completed - {txnData?.txnAmount}{" "}
           {txnData?.transactionType === "mint" ? "minted" : "transferred"} to{" "}
           {txnData?.recipientAddress}

@@ -1,17 +1,22 @@
+"use client";
+import Account from "@/components/Account";
+import { RootState } from "@/redux/store";
 import Link from "next/link";
 import React from "react";
-import { useDispatch } from "react-redux/es/exports";
-import { connectWallet } from "../../../redux/EOAConnectSlice";
-import { AppDispatch, store } from "@/redux/store";
-import Account from "@/components/Account";
+import { useSelector } from "react-redux";
+
 function page() {
+  const { address } = useSelector((state: RootState) => state.eoaConnect);
+
   return (
     <div>
       <div className="flex justify-between items-center">
         <h1 className="text-4xl md:text-6xl text-blue-200 mx-16 bg-gradient-to-r from-gray-900 via-gray-950 to-gray-950 p-3 my-3 rounded-xl font-kanit_bold">
           WELCOME TO ZK WALLET
         </h1>
-        <p className="p-2 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-950 my-3 rounded-xl mx-12 text-blue-200 font-bold"></p>
+        <p className="p-2 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-950 my-3 rounded-xl mx-12 text-blue-200 font-bold">
+          {address}
+        </p>
       </div>
       <div className="text-white mt-8 mx-16 flex flex-col lg:flex-row gap-6">
         <div className="createAcc border-4 border-gray-800 w-full lg:w-[44%] py-8 flex flex-col gap-8 items-center rounded-xl shadow-xl shadow-slate-900 h-fit">

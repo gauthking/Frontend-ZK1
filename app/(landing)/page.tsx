@@ -1,5 +1,13 @@
+"use client";
+import { RootState } from "@/redux/store";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+
 export default function Home() {
+  const router = useRouter();
+  const { isLoggedIn } = useSelector((state: RootState) => state.eoaConnect);
+  console.log("logged in - ", isLoggedIn);
   return (
     <main>
       <div className="flex justify-center flex-col items-center mt-44">
@@ -12,12 +20,26 @@ export default function Home() {
       </div>
       <div className="buttons flex justify-center gap-8 text-xs md:justify-between md:text-lg items-center w-96 m-auto mt-12">
         <Link href="/start">
-          <button className="bg-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100 w-22 md:w-44">
+          <button
+            disabled={!isLoggedIn}
+            className={
+              isLoggedIn
+                ? "bg-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100 w-22 md:w-44"
+                : "g-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 w-22 md:w-44"
+            }
+          >
             Get Started
           </button>
         </Link>
         <Link href="/about">
-          <button className="bg-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100 w-20 md:w-44">
+          <button
+            disabled={!isLoggedIn}
+            className={
+              isLoggedIn
+                ? "bg-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100 w-22 md:w-44"
+                : "g-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 w-22 md:w-44"
+            }
+          >
             About Us
           </button>
         </Link>
