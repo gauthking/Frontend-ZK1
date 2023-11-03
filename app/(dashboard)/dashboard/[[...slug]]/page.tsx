@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getPrivateKey,
   getPublicKey,
+  setIsLoggedIn,
   setWProvider,
   setWeb3Auth,
 } from "@/redux/EOAConnectSlice";
@@ -122,6 +123,13 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
               defaultLanguage: "en", // en, de, ja, ko, zh, es, fr, pt, nl
               mode: "dark", // whether to enable dark, light or auto mode. defaultValue: auto [ system theme]
             },
+            loginConfig: {
+              google: {
+                verifier: "zkwallet-new-google-verifier",
+                typeOfLogin: "google",
+                clientId: process.env.NEXT_PUBLIC_GOOGLECLIENTID, // this should be the google client id. pls pass it
+              },
+            },
             mfaSettings: {
               deviceShareFactor: {
                 enable: true,
@@ -161,11 +169,12 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
           },
         });
         await web3auth.addPlugin(torusPlugin);
-
+        dispatch(setWeb3Auth(web3auth));
         await web3auth.initModal();
         dispatch(setWProvider(web3auth.provider));
 
         if (web3auth.connected) {
+          dispatch(setIsLoggedIn(true));
           dispatch(getPublicKey(store.getState().eoaConnect.provider));
           dispatch(getPrivateKey(store.getState().eoaConnect.provider));
         }
@@ -178,7 +187,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setEoaAddress(newAddress);
     checkSCRStatus();
     checkSmartAccountBalance();
-  },[]);
+  }, []);
 
   const toggleActionSCR = async (value: boolean) => {
     setLoaderModal(true);

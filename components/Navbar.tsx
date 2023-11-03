@@ -61,8 +61,7 @@ function Navbar() {
           mfaLevel: "optional",
         },
         adapterSettings: {
-          network: "testnet",
-          uxMode: "popup", // "redirect" | "popup"
+          uxMode: "redirect", // "redirect" | "popup"
           whiteLabel: {
             logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
             logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
@@ -73,8 +72,7 @@ function Navbar() {
             google: {
               verifier: "zkwallet-new-google-verifier",
               typeOfLogin: "google",
-              clientId:
-                "651172170338-fmndjlrjdg33n6lm5aivdie64u1sd5e8.apps.googleusercontent.com", // this should be the google client id. pls pass it
+              clientId: process.env.NEXT_PUBLIC_GOOGLECLIENTID, // this should be the google client id. pls pass it
             },
           },
           mfaSettings: {

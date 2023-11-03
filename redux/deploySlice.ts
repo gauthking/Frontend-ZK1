@@ -4,11 +4,11 @@ import AAArtifact from "../contractABIs/AAFactory.json";
 import ContractDeployerArtifact from "../contractABIs/ContractDeployer.json";
 import { store } from './store';
 
-const guardianStorageBytecodeHash = process.env.NEXT_PUBLIC_GUARDIANSTORAGEBYTECODEHASH;
-const socialRecoveryModuleBytecodeHash = process.env.NEXT_PUBLIC_SCRBYTECODEHASH;
+const guardianStorageBytecodeHash = "0x0100018dff71995123c2038837d1d2514a572c8101e07144590c6d73570aed8b";
+const socialRecoveryModuleBytecodeHash = "0x01000a211886d67c075548275a211c6c17133b18967a86d828327ee59832e8a0";
 
-const contractDeployerAddress: any = process.env.NEXT_PUBLIC_CONTRACTDEPLOYERADDRESS;
-const aaFactoryAddress: any = process.env.NEXT_PUBLIC_AAFACTORYADDRESS;
+const contractDeployerAddress: any = "0x0000000000000000000000000000000000008006";
+const aaFactoryAddress: any = "0x08dD11bb40eCCafD53b40c69379Bc44B26267a3C";
 
 interface deployments {
     guardianAddress: string;
