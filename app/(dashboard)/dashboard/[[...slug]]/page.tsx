@@ -178,7 +178,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setEoaAddress(newAddress);
     checkSCRStatus();
     checkSmartAccountBalance();
-  }, []);
+  });
 
   const toggleActionSCR = async (value: boolean) => {
     setLoaderModal(true);

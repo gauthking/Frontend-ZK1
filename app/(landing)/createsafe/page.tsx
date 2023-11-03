@@ -27,7 +27,7 @@ const CreateSafePage = () => {
     const newAddress = store.getState().eoaConnect.address;
     console.log(newAddress);
     setOwners([{ address: newAddress, id: 0 }]);
-    console.log(owners);
+    // console.log(owners);
   }, [address]);
 
   console.log(ownerLength);
