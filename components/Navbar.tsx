@@ -70,7 +70,7 @@ function Navbar() {
           },
           loginConfig: {
             google: {
-              verifier: "zkwallet-new-google-verifier",
+              verifier: "zkwallet-google-provider",
               typeOfLogin: "google",
               clientId: process.env.NEXT_PUBLIC_GOOGLECLIENTID, // this should be the google client id. pls pass it
             },
