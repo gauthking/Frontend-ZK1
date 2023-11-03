@@ -124,7 +124,7 @@ function Navbar() {
   };
   useEffect(() => {
     init();
-  }, []);
+  });
   console.log(store.getState().eoaConnect.provider);
 
   const login = async () => {
