@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 
 export default function Home() {
-  const { isLoggedIn } = useSelector((state: RootState) => state.eoaConnect);
+  const isLoggedIn = useSelector(
+    (state: RootState) => state.eoaConnect.isLoggedIn
+  );
   console.log("logged in - ", isLoggedIn);
   return (
     <main>

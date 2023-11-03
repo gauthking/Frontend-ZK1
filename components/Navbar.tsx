@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Web3Auth } from "@web3auth/modal";
-import { useDispatch, useSelector } from "react-redux/es/exports";
+import { useDispatch, useSelector } from "react-redux";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import {
   OpenloginAdapter,
@@ -19,14 +19,14 @@ import { TorusWalletConnectorPlugin } from "@web3auth/torus-wallet-connector-plu
 
 function Navbar() {
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoggedIn } = useSelector((state: RootState) => state.eoaConnect);
+  const isLoggedIn = useSelector(
+    (state: RootState) => state.eoaConnect.isLoggedIn
+  );
   const clientId: any = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
 
   const [torusPlugin, setTorusPlugin] =
     useState<TorusWalletConnectorPlugin | null>(null);
-  // useEffect(() => {
-  //   // dispatch(connectWallet());
-  // }, []);
+
   const init = async () => {
     console.log("init");
     try {
@@ -124,7 +124,7 @@ function Navbar() {
   };
   useEffect(() => {
     init();
-  });
+  }, []);
   console.log(store.getState().eoaConnect.provider);
 
   const login = async () => {
