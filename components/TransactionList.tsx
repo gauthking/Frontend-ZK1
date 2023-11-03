@@ -23,7 +23,7 @@ interface txnInterface {
 interface transactionListInterface {
   address: string;
   threshold: number;
-  setTxnPayload: Dispatch<SetStateAction<txnInterface>>;
+  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
   setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
   handleSignTxnComponent: boolean;
 }
