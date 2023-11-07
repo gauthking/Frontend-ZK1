@@ -64,7 +64,7 @@ function TransactionList({
     () => (
       <div className="w-full flex flex-col items-center justify-between gap-4">
         <h1 className="font-kanit_bold text-xl text-yellow-50">Transactions</h1>
-        <div className="min-h-[200px] w-full border-t-2 border-blue-100 border-opacity-10 rounded-xl overflow-scroll">
+        <div className="max-h-[300px] w-full border-t-2 border-b-2 border-blue-100 border-opacity-10 rounded-xl overflow-scroll">
           {!txnDataLoader ? (
             txnData.map((txn, index) => (
               <div

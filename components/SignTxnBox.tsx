@@ -36,6 +36,7 @@ function SignTxnBox({
         amount: txnData?.txnAmount,
         recipientAddress: txnData?.recipientAddress,
         paymasterParams: txnData?.paymaster,
+        txnType: txnData?.transactionType,
       });
       console.log(currentTxnHash);
       // const ethSignRequest = await window.ethereum.request({
@@ -55,6 +56,7 @@ function SignTxnBox({
         txnId: txnData?._id,
         recipientAddress: txnData?.recipientAddress,
         txnAmount: txnData?.txnAmount,
+        txnType: txnData?.transactionType,
       });
       console.log(signaturePost);
       if (signaturePost.status === 200) {
