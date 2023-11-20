@@ -8,10 +8,13 @@ import Dialog from "@mui/material/Dialog";
 import Slide from "@mui/material/Slide";
 import { TransitionProps } from "@mui/material/transitions";
 import axios from "../app/axios";
+import { Provider } from "zksync-web3";
+import { ethers } from "ethers";
+import erc20ABI from "../contractABIs/ERC20.json";
 
 interface DashboardNavProps {
   setOpen: React.Dispatch<SetStateAction<boolean>>;
-  accountAddress: string | null | undefined;
+  accountAddress: any;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -27,6 +30,9 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
   const { address } = useSelector((state: RootState) => state.eoaConnect);
   const [openSlider, setOpenSlider] = React.useState<boolean>(false);
   const [owners, setOwners] = React.useState<Array<string>>([]);
+  const [ethBalance, setEthBalance] = React.useState<any>();
+  const [erc20balance, setErc20Balance] = React.useState<any>();
+
   const handleClickOpen = () => {
     setOpenSlider(true);
   };
@@ -40,8 +46,25 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
     setOwners(req.data.owners);
   };
 
+  const updateBalance = async () => {
+    const provider = new Provider("https://zksync2-testnet.zksync.dev");
+    const balance = await provider.getBalance(accountAddress);
+    setEthBalance(parseInt(balance._hex) / 10 ** 18);
+    const erc20ContractAddress = "0x4A0F0ca3A08084736c0ef1a3bbB3752EA4308bD3";
+    const erc20Contract = new ethers.Contract(
+      erc20ContractAddress,
+      erc20ABI.abi,
+      provider
+    );
+    const tokenBalance = await erc20Contract.balanceOf(accountAddress);
+    setErc20Balance(parseInt(tokenBalance._hex) / 10 ** 18);
+  };
+
+  console.log("eth balance - ", ethBalance);
+  console.log("eth balance - ", erc20balance);
   useEffect(() => {
     getOwners();
+    updateBalance();
   }, []);
 
   return (
@@ -62,7 +85,7 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
           </div>
         </Box>
       </Dialog>
-      <div>
+      <div className="flex">
         <Link href={"/start"}>
           <button className="text-sm font-kanit_bold text-slate-100 bg-slate-800 p-2 rounded-xl ml-3 hover:scale-105 transition-all ease-in-out hover:bg-slate-900">
             Go Back
@@ -75,6 +98,19 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
         >
           View Owners
         </button>
+
+        <div className="balances flex items-center gap-3 mx-4">
+          <div className="flex items-center justify-center p-2 gap-2">
+            <p className="text-sm font-kanit_bold text-slate-100 ">ETH : </p>
+            <p className=" text-sm font-light text-slate-100 ">{ethBalance}</p>
+          </div>
+          <div className="flex items-center justify-center p-2 gap-2">
+            <p className="text-sm font-kanit_bold text-slate-100 ">ERC20 : </p>
+            <p className=" text-sm font-light text-slate-100 ">
+              {erc20balance}
+            </p>
+          </div>
+        </div>
       </div>
       <div className="flex items-center">
         <button

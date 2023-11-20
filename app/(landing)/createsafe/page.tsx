@@ -6,11 +6,13 @@ import Dropdown from "@/components/Dropdown";
 import axios from "../../axios";
 import { useRouter } from "next/navigation";
 import { deployAll, setDeployThreshold } from "@/redux/deploySlice";
+import { Box, CircularProgress } from "@mui/material";
 
 const CreateSafePage = () => {
   const [network, setNetwork] = useState<string>("");
   const [safeName, setSafeName] = useState<string>("");
   const [threshold, setThreshold] = useState<string>("0");
+  const [deployLoader, setDeployLoader] = useState<boolean>(false);
   const { address } = useSelector((state: RootState) => state.eoaConnect);
 
   const [owners, setOwners] = useState<
@@ -33,6 +35,7 @@ const CreateSafePage = () => {
   console.log(ownerLength);
   const createSafe = async () => {
     try {
+      setDeployLoader(true);
       dispatch(setDeployThreshold(threshold));
       let ownerList = [];
       for (let i = 0; i < owners.length; i++) {
@@ -52,6 +55,7 @@ const CreateSafePage = () => {
             store.getState().deployContracts.socialRecoveryAddress,
         })
         .then((res) => {
+          setDeployLoader(true);
           console.log(res);
           router.push(
             `/dashboard/${safeName}/${
@@ -61,6 +65,11 @@ const CreateSafePage = () => {
         });
     } catch (error) {
       console.error(error);
+      setDeployLoader(false);
+
+      alert(
+        "An error occured while deploying the contracts. Please contact the dev team"
+      );
     }
   };
 
@@ -164,12 +173,25 @@ const CreateSafePage = () => {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => createSafe()}
-            className="bg-blue-950  font-kanit_bold p-2 md:p-2 my-2 rounded-lg text-gray-200 shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-105 transition ease-in-out duration-200 active:bg-blue-100 w-22 md:w-44"
-          >
-            Create Safe Wallet
-          </button>
+          {deployLoader ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CircularProgress size={"52px"} />
+            </Box>
+          ) : (
+            <button
+              onClick={() => createSafe()}
+              className="bg-blue-950  font-kanit_bold p-2 md:p-2 my-2 rounded-lg text-gray-200 shadow-sm shadow-slate-600 hover:bg-blue-200 hover:scale-105 transition ease-in-out duration-200 active:bg-blue-100 w-22 md:w-44"
+            >
+              Create Safe Wallet
+            </button>
+          )}
+
           <p className="text-gray-400 text-sm fontExtraLight">
             By continuing, you agree to our terms of use and privacy policy.
           </p>
