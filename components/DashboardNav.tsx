@@ -32,6 +32,7 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
   const [owners, setOwners] = React.useState<Array<string>>([]);
   const [ethBalance, setEthBalance] = React.useState<any>();
   const [erc20balance, setErc20Balance] = React.useState<any>();
+  const [balanceLoader, setBalanceLoader] = React.useState<boolean>(false);
 
   const handleClickOpen = () => {
     setOpenSlider(true);
@@ -48,6 +49,7 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
 
   const updateBalance = async () => {
     const provider = new Provider("https://zksync2-testnet.zksync.dev");
+    setBalanceLoader(true);
     const balance = await provider.getBalance(accountAddress);
     setEthBalance(parseInt(balance._hex) / 10 ** 18);
     const erc20ContractAddress = "0x4A0F0ca3A08084736c0ef1a3bbB3752EA4308bD3";
@@ -58,6 +60,7 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
     );
     const tokenBalance = await erc20Contract.balanceOf(accountAddress);
     setErc20Balance(parseInt(tokenBalance._hex) / 10 ** 18);
+    setBalanceLoader(false);
   };
 
   console.log("eth balance - ", ethBalance);
@@ -102,12 +105,26 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
         <div className="balances flex items-center gap-3 mx-4">
           <div className="flex items-center justify-center p-2 gap-2">
             <p className="text-sm font-kanit_bold text-slate-100 ">ETH : </p>
-            <p className=" text-sm font-light text-slate-100 ">{ethBalance}</p>
+            <p className=" text-sm font-light text-slate-100 ">
+              {balanceLoader ? (
+                <Box sx={{ display: "flex" }}>
+                  <CircularProgress size={"12px"} />
+                </Box>
+              ) : (
+                ethBalance?.toFixed(3)
+              )}
+            </p>
           </div>
           <div className="flex items-center justify-center p-2 gap-2">
             <p className="text-sm font-kanit_bold text-slate-100 ">ERC20 : </p>
             <p className=" text-sm font-light text-slate-100 ">
-              {erc20balance}
+              {balanceLoader ? (
+                <Box sx={{ display: "flex" }}>
+                  <CircularProgress size={"12px"} />
+                </Box>
+              ) : (
+                erc20balance?.toFixed(3)
+              )}
             </p>
           </div>
         </div>

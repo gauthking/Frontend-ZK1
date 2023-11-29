@@ -147,26 +147,24 @@ function Navbar() {
   };
 
   return (
-    <nav className="flex items-center justify-center px-2 py-3 bg-gradient-to-r from-gray-950 via-gray-950 to-gray-900 my-3 rounded-xl shadow-md mx-2 md:mx-8 shadow-slate-900 border-b-2 border-gray-800">
-      <div className="container px-4 mx-auto flex items-center justify-between">
-        <div className="w-full relative flex justify-between lg:w-auto  px-4 lg:static lg:block lg:justify-start">
-          <a className="text-xs md:text-sm leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase text-gray-300 font-bold ">
-            ZK Innovations
-          </a>
-        </div>
-        <button
-          disabled={isLoggedIn ? true : false}
-          onClick={() => login()}
-          className={`bg-gray-800 p-2 md:p-3 my-2 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 text-xs  ${
-            !isLoggedIn
-              ? "hover:bg-blue-300 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100"
-              : ""
-          }`}
-        >
-          {isLoggedIn ? "Connected" : "Connect to Web3"}
-        </button>
-        {/* <button onClick={() => getAccounts()}>Get Accounts</button> */}
+    <nav className="flex items-center justify-between px-2 mx-4 py-3 bg-gradient-to-r from-gray-950 via-gray-950 to-gray-900 my-3 rounded-xl shadow-md md:mx-8 shadow-slate-900 border-b-2 border-gray-800">
+      <div className="w-full relative flex justify-between lg:w-auto  px-4 lg:static lg:block lg:justify-start">
+        <a className="text-xs md:text-sm leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase text-gray-300 font-bold ">
+          ZK Innovations
+        </a>
       </div>
+      {/* <button onClick={() => getAccounts()}>Get Accounts</button> */}
+      <button
+        disabled={isLoggedIn ? true : false}
+        onClick={() => login()}
+        className={`bg-gray-800 p-2 md:p-3 my-2 mx-3 rounded-lg text-gray-200 font-bold shadow-sm shadow-slate-600 text-xs  ${
+          !isLoggedIn
+            ? "hover:bg-blue-300 hover:scale-110 transition ease-in-out duration-200 active:bg-blue-100"
+            : ""
+        }`}
+      >
+        {isLoggedIn ? "Connected" : "Connect to Web3"}
+      </button>
     </nav>
   );
 }

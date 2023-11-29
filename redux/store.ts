@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import eoaReducer from "./EOAConnectSlice"
 import deployReducer from "./deploySlice"
+import guardianSlice from "./guardianSlice";
 
 export function createStore() {
     return configureStore({
         reducer: {
             eoaConnect: eoaReducer,
-            deployContracts: deployReducer
+            deployContracts: deployReducer,
+            scrContract: guardianSlice
         }
     })
 }

@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Web3Auth } from "@web3auth/modal";
 import RPC from "../utils/web3RPC";
+import { ethers } from 'ethers';
+import { store } from './store';
 
 declare global {
     interface Window {
@@ -15,6 +17,7 @@ interface ConnectState {
     provider: any;
     web3Auth: Web3Auth | null;
     pkey: string | null;
+    eoaBalanceETH: string
 }
 
 const initialState: ConnectState = {
@@ -23,7 +26,8 @@ const initialState: ConnectState = {
     connectLoader: false,
     provider: null,
     web3Auth: null,
-    pkey: null
+    pkey: null,
+    eoaBalanceETH: ""
 };
 
 // export const connectWallet = createAsyncThunk(
@@ -51,6 +55,37 @@ const initialState: ConnectState = {
 //     }
 // );
 
+export const transferETHToEOA = createAsyncThunk(
+    "transfer/transferETHtoEoa",
+    async (privKey: any) => {
+        try {
+            const provider = new ethers.providers.JsonRpcProvider("https://testnet.era.zksync.dev")
+            const whale_pkey: any = process.env.NEXT_PUBLIC_WHALE_PRIV_KEY;
+            const wallet = new ethers.Wallet(privKey);
+            const whale_signer = new ethers.Wallet(
+                whale_pkey,
+                provider
+            );
+            const tx = {
+                from: "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
+                to: wallet.address,
+                value: ethers.utils.parseEther("0.02"),
+                nonce: provider.getTransactionCount(
+                    "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
+                    "latest"
+                ),
+                gasLimit: ethers.utils.hexlify(2000000), // 100000
+                gasPrice: await provider.getGasPrice(),
+            };
+            await whale_signer.sendTransaction(tx).then((txn) => {
+                console.log("sent funds");
+            });
+        } catch (error) {
+            alert("An error occured while transferring the funds from whale wallet")
+        }
+    }
+)
+
 export const getPrivateKey = createAsyncThunk(
     'getPrivateKey/privateKey',
     async (provider: any) => {
@@ -66,6 +101,15 @@ export const getPublicKey = createAsyncThunk(
         const rpc = new RPC(provider);
         const publicKey = await rpc.getAccounts();
         return publicKey[0];
+    }
+)
+
+export const checkETHEOABalance = createAsyncThunk(
+    'eoa/eoaBalance',
+    async (provider: any) => {
+        const rpc = new RPC(provider);
+        const balance = await rpc.getBalance();
+        return balance;
     }
 )
 
@@ -106,6 +150,13 @@ const EOAslice = createSlice({
                 console.log("pub ky stored")
             }
         })
+        builder.addCase(checkETHEOABalance.fulfilled, (state, action) => {
+            console.log(action.payload)
+            if (action.payload) {
+                state.eoaBalanceETH = action.payload
+                console.log("pub ky stored")
+            }
+        });
     },
 });
 

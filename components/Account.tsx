@@ -16,16 +16,15 @@ function Account() {
     try {
       setLoader(true);
       const req = await axios.get("/api/account/");
-      console.log(req.data);
       let temp = [];
-      console.log(req.data[0].owners);
-      console.log(address);
-      for (let i = 0; i < req.data.length; i++) {
-        const owners = req.data[i].owners;
-        for (let j = 0; j < owners.length; j++) {
-          if (owners[j].toLowerCase() === address?.toLowerCase()) {
-            temp.push(req.data[i]);
-            break;
+      if(req.data !==0){
+        for (let i = 0; i < req.data.length; i++) {
+          const owners = req.data[i].owners;
+          for (let j = 0; j < owners.length; j++) {
+            if (owners[j].toLowerCase() === address?.toLowerCase()) {
+              temp.push(req.data[i]);
+              break;
+            }
           }
         }
       }

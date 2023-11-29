@@ -12,11 +12,13 @@ import {
 } from "@web3auth/openlogin-adapter";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  checkETHEOABalance,
   getPrivateKey,
   getPublicKey,
   setIsLoggedIn,
   setWProvider,
   setWeb3Auth,
+  transferETHToEOA,
 } from "@/redux/EOAConnectSlice";
 import { TorusWalletConnectorPlugin } from "@web3auth/torus-wallet-connector-plugin";
 import Image from "next/image";
@@ -29,6 +31,11 @@ import { CircularProgress } from "@mui/material";
 import { Wallet, ethers } from "ethers";
 import { Provider } from "zksync-web3";
 import erc20ABI from "../../../../contractABIs/ERC20.json";
+import {
+  addGuardianWithThreshold,
+  setGuardianAddress,
+  setGuardianThreshold,
+} from "@/redux/guardianSlice";
 
 interface txnInterface {
   transactionType: string;
@@ -42,12 +49,22 @@ interface txnInterface {
   __v: number;
 }
 
+interface accountGuardians {
+  safeAddress: string;
+  assignedBy: string;
+  guardianAddress: string;
+  currentSetThreshold: number;
+  approvalSignatures: any[];
+  approvedStatus: string;
+  rejectedBy: string;
+  assignedAt: any;
+}
+
 interface scrSchemaInterface {
   smartAccount: string;
   enabled: boolean;
   enabledBy: string;
-  signatures: Array<string | undefined | null>;
-  signedBy: Array<string | undefined | null>;
+  signatures: Array<any>;
   _id: string;
   __v: number;
 }
@@ -61,7 +78,9 @@ const style = {
   border: "2px solid #000",
   boxShadow: 24,
   borderRadius: 7,
-  p: 4,
+  padding: 4,
+  overflow: "scroll",
+  height: "92%",
 };
 
 const Page = ({ params }: { params: { slug: string[] } }) => {
@@ -73,8 +92,14 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
   const [eoaAddress, setEoaAddress] = useState<string | null>("");
   const [open, setOpen] = useState(false);
   const [loaderModal, setLoaderModal] = useState<boolean>(false);
+  const [gAddress, setGAddress] = useState<string | null>("");
+  const [gThreshold, setGThreshold] = useState<string | null>("");
   const [scrPayload, setScrPayload] = useState<scrSchemaInterface>();
-  const { address } = useSelector((state: RootState) => state.eoaConnect);
+  const [guardians, setGuardians] = useState<accountGuardians[]>([]);
+
+  const { address, eoaBalanceETH } = useSelector(
+    (state: RootState) => state.eoaConnect
+  );
 
   const handleClose = () => setOpen(false);
 
@@ -175,8 +200,11 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
         if (web3auth.connected) {
           dispatch(setIsLoggedIn(true));
-          dispatch(getPublicKey(store.getState().eoaConnect.provider));
-          dispatch(getPrivateKey(store.getState().eoaConnect.provider));
+          await dispatch(getPublicKey(store.getState().eoaConnect.provider));
+          await dispatch(getPrivateKey(store.getState().eoaConnect.provider));
+          await dispatch(
+            checkETHEOABalance(store.getState().eoaConnect.provider)
+          );
         }
       } catch (error) {
         console.error(error);
@@ -187,7 +215,50 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setEoaAddress(newAddress);
     checkSCRStatus();
     checkSmartAccountBalance();
+    ``;
+    getGuadiansAcc();
   }, []);
+
+  console.log("eth balance - ", eoaBalanceETH);
+
+  const addGuardian = async () => {
+    if (gAddress !== null && gThreshold !== null) {
+      try {
+        // if (parseInt(eoaBalanceETH) < 0.002) {
+        //   alert(
+        //     "Funds for contract calls are low in this account... Transfering 0.02ETH from WHALE wallet.."
+        //   );
+        //   await dispatch(
+        //     transferETHToEOA(store.getState().eoaConnect.pkey)
+        //   ).then(() =>
+        //     alert(
+        //       "Funds have been successfully transferred from whale to the signer"
+        //     )
+        //   );
+        // }
+        // dispatch(setGuardianThreshold(gThreshold));
+        // dispatch(setGuardianAddress(gAddress));
+        // const addGuardianCall = await dispatch(
+        //   addGuardianWithThreshold(params.slug[1])
+        // );
+        const updateDB = await axios
+          .post("/api/account/addGuardian", {
+            safeAddress: params.slug[1],
+            assignedBy: address,
+            guardianAddress: gAddress,
+            currentSetThreshold: gThreshold,
+          })
+          .then(async (d) => {
+            console.log("posted guardian to db - ", d);
+            await getGuadiansAcc();
+          });
+      } catch (e) {
+        console.log("an error occured at addguardiancall - ", e);
+      }
+    } else {
+      alert("Please fill the fields properly before continuing...");
+    }
+  };
 
   const toggleActionSCR = async (value: boolean) => {
     setLoaderModal(true);
@@ -203,80 +274,99 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setLoaderModal(false);
   };
 
-  const checkSmartAccountBalance = async () => {
-    const provider = new Provider("https://zksync2-testnet.zksync.dev");
-    const balance = await provider.getBalance(params.slug[1]);
-    console.log("bal", balance);
-    const erc20ContractAddress = "0x4A0F0ca3A08084736c0ef1a3bbB3752EA4308bD3";
-    const priv_key_whale: any = process.env.NEXT_PUBLIC_WHALE_PRIV_KEY;
-    const whale_signer = new Wallet(priv_key_whale, provider);
-    const erc20Contract = new ethers.Contract(
-      erc20ContractAddress,
-      erc20ABI.abi,
-      whale_signer
-    );
-
-    const erc20Balance = await erc20Contract.balanceOf(params.slug[1]);
-    console.log("erc20 balance - ", erc20Balance);
-
-    if (parseInt(balance._hex) === 0) {
-      const confirmTransfer = window.confirm(
-        "Smart Account balance (ETH) is 0. Do you want to transfer some funds from a WHALE wallet?"
-      );
-      if (confirmTransfer) {
-        const tx = {
-          from: "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
-          to: params.slug[1],
-          value: ethers.utils.parseEther("0.02"),
-          nonce: provider.getTransactionCount(
-            "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
-            "latest"
-          ),
-          gasLimit: ethers.utils.hexlify(2000000), // 100000
-          gasPrice: await provider.getGasPrice(),
-        };
-        await whale_signer.sendTransaction(tx).then((txn) => {
-          console.log("sent funds");
-          alert("Funds have been sent to the smart account");
-        });
-      }
+  const getGuadiansAcc = async () => {
+    try {
+      const getAccount = await axios.get(`/api/account/${params.slug[1]}`);
+      console.log("getAccount", getAccount);
+      setGuardians(getAccount.data.accountGuardians);
+      console.log("guardians set");
+    } catch (error) {
+      console.log("An error occured at getting guardians - ", error);
     }
+  };
 
-    if (parseInt(erc20Balance._hex) === 0) {
-      const confirmTransfer = window.confirm(
-        "Smart Account balance (ERC20-TT) is 0. Do you want to transfer some funds from a WHALE wallet?"
+  const checkSmartAccountBalance = async () => {
+    try {
+      const provider = new Provider("https://zksync2-testnet.zksync.dev");
+      const balance = await provider.getBalance(params.slug[1]);
+      console.log("bal", balance);
+      const erc20ContractAddress = "0x4A0F0ca3A08084736c0ef1a3bbB3752EA4308bD3";
+      const priv_key_whale: any = process.env.NEXT_PUBLIC_WHALE_PRIV_KEY;
+      const whale_signer = new Wallet(priv_key_whale, provider);
+      const erc20Contract = new ethers.Contract(
+        erc20ContractAddress,
+        erc20ABI.abi,
+        whale_signer
       );
-      if (confirmTransfer) {
-        const amount = ethers.utils.parseUnits("10", 18);
-        const erc20Tx = await erc20Contract.transfer(params.slug[1], amount);
-        console.log("sent ERC20 tokens", erc20Tx);
+
+      const erc20Balance = await erc20Contract.balanceOf(params.slug[1]);
+      console.log("erc20 balance - ", erc20Balance);
+
+      if (parseInt(balance._hex) === 0) {
+        const confirmTransfer = window.confirm(
+          "Smart Account balance (ETH) is 0. Do you want to transfer some funds from a WHALE wallet?"
+        );
+        if (confirmTransfer) {
+          const tx = {
+            from: "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
+            to: params.slug[1],
+            value: ethers.utils.parseEther("0.02"),
+            nonce: provider.getTransactionCount(
+              "0x527c52C431B6D4b3D5c346Dad4BfC144d06Dc9cf",
+              "latest"
+            ),
+            gasLimit: ethers.utils.hexlify(2000000), // 100000
+            gasPrice: await provider.getGasPrice(),
+          };
+          await whale_signer.sendTransaction(tx).then((txn) => {
+            console.log("sent funds");
+            alert("Funds have been sent to the smart account");
+          });
+        }
       }
+
+      if (parseInt(erc20Balance._hex) === 0) {
+        const confirmTransfer = window.confirm(
+          "Smart Account balance (ERC20-TT) is 0. Do you want to transfer some funds from a WHALE wallet?"
+        );
+        if (confirmTransfer) {
+          const amount = ethers.utils.parseUnits("10", 18);
+          const erc20Tx = await erc20Contract.transfer(params.slug[1], amount);
+          console.log("sent ERC20 tokens", erc20Tx);
+        }
+      }
+    } catch (error) {
+      console.log("An error occured while fetching the balances - ", error);
     }
   };
 
   const signSCRTxn = async () => {
-    const getAccount = await axios.get(`/api/account/${params.slug[1]}`);
-    console.log("getAccount", getAccount);
-    const scrAddress = getAccount.data.socialRecoveryModuleAddress;
-    const getTxnHash = await axios.post("/api/account/getTxnHash", {
-      safeAddress: params.slug[1],
-      scrmAddress: scrAddress,
-    });
-    console.log("txn hash", getTxnHash);
-    const signer_pkey: any = store.getState().eoaConnect.pkey;
-    const signer = new Wallet(signer_pkey);
-    const signature = ethers.utils.joinSignature(
-      signer._signingKey().signDigest(getTxnHash.data.scrTxnHash)
-    );
-    console.log("signature", signature);
-    const sign = await axios.post("/api/account/signSCRTxn", {
-      safeAddress: params.slug[1],
-      signature: signature,
-      signerAddress: address,
-      scrAddress: scrAddress,
-    });
-    console.log(sign.data);
-    checkSCRStatus();
+    try {
+      const getAccount = await axios.get(`/api/account/${params.slug[1]}`);
+      console.log("getAccount", getAccount);
+      const scrAddress = getAccount.data.socialRecoveryModuleAddress;
+      const getTxnHash = await axios.post("/api/account/getTxnHash", {
+        safeAddress: params.slug[1],
+        scrmAddress: scrAddress,
+      });
+      console.log("txn hash", getTxnHash);
+      const signer_pkey: any = store.getState().eoaConnect.pkey;
+      const signer = new Wallet(signer_pkey);
+      const signature = ethers.utils.joinSignature(
+        signer._signingKey().signDigest(getTxnHash.data.scrTxnHash)
+      );
+      console.log("signature", signature);
+      const sign = await axios.post("/api/account/signSCRTxn", {
+        safeAddress: params.slug[1],
+        signature: signature,
+        signerAddress: address,
+        scrAddress: scrAddress,
+      });
+      console.log(sign.data);
+      checkSCRStatus();
+    } catch (error) {
+      alert("An error occured while executing the signSCRTxn method");
+    }
   };
 
   const checkSCRStatus = async () => {
@@ -308,7 +398,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
             >
               <CircularProgress size={"22px"} />
             </Box>
-          ) : scrPayload?.signedBy.length === parseInt(params.slug[2]) ? (
+          ) : scrPayload?.signatures.length === parseInt(params.slug[2]) ? (
             <div className="mt-12 flex justify-center items-center">
               <button
                 title="This will deploy a new social recovery contract by the smartAccount and use the new address to build the new enableModule EIP712 transaction"
@@ -346,13 +436,13 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
             </div>
           )}
           {scrPayload?.enabled &&
-          scrPayload?.signedBy.length !== parseInt(params.slug[2]) ? (
+          scrPayload?.signatures.length !== parseInt(params.slug[2]) ? (
             <p className="text-slate-50 text-center font-light mt-3">
               Activated. Waiting for all signatures to exceute enableModule
               transaction.
             </p>
           ) : scrPayload?.enabled &&
-            scrPayload?.signedBy.length === parseInt(params.slug[2]) ? (
+            scrPayload?.signatures.length === parseInt(params.slug[2]) ? (
             <p className="text-slate-50 text-center font-light mt-3">
               enableModule called upon receiving the threshold amount of
               signatures!!
@@ -374,16 +464,18 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
                 Signed By:
               </p>
               <div className="mx-3 p-2 border-2">
-                {scrPayload.signedBy?.map((owner, index) => (
+                {scrPayload.signatures?.map((owner, index) => (
                   <p
                     key={index}
                     className="font-semibold text-lg text-slate-100"
                   >
-                    {owner}
+                    {owner.signerAddress}
                   </p>
                 ))}
               </div>
-              {!scrPayload.signedBy.includes(address) ? (
+              {!scrPayload.signatures.some(
+                (s) => s.signerAddress === address
+              ) ? (
                 <button
                   onClick={() => signSCRTxn()}
                   className="mt-6 text-sm font-kanit_bold text-slate-100 bg-blue-950 rounded-xl  h-fit p-2 hover:scale-105 transition-all ease-in-out hover:bg-slate-800"
@@ -391,10 +483,82 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
                   Sign
                 </button>
               ) : (
-                <p className="text-md text-slate-100 bg-slate-800 rounded-xl p-2 w-fit">
+                <p className="text-sm text-slate-100 bg-slate-800 rounded-xl p-2 w-fit">
                   You have already signed!
                 </p>
               )}
+            </div>
+          ) : (
+            ""
+          )}
+          {scrPayload?.enabled &&
+          scrPayload?.signatures.length === parseInt(params.slug[2]) ? (
+            <div className="ml-12 ">
+              <hr />
+              <p className="text-md text-slate-100 font-kanit_bold p-2 w-fit rounded-xl">
+                Add Guardian
+              </p>
+              <input
+                onChange={(e: any) => setGAddress(e.target.value)}
+                placeholder="Guardian Address"
+                className="p-2 px-3 mx-1 my-2 w-full outline-none bg-gray-700 rounded-xl text-gray-100 font-bold shadow-sm shadow-gray-800"
+                type="text"
+              />
+              <input
+                onChange={(e: any) => setGThreshold(e.target.value)}
+                placeholder="Threshold"
+                className="p-2 px-3 mx-1 my-2 w-fit outline-none bg-gray-700 rounded-xl text-gray-100 font-bold shadow-sm shadow-gray-800"
+                type="text"
+              />
+              <button
+                onClick={() => addGuardian()}
+                className="text-sm font-kanit_bold text-slate-100 bg-blue-700 rounded-xl  h-fit p-2 hover:scale-105 transition-all ease-in-out hover:bg-red-900 active:bg-red-800"
+              >
+                Add
+              </button>
+              <hr />
+              <div className="flex flex-col gap-2 items-center my-4 w-full">
+                {guardians.length !== 0
+                  ? guardians.map((guardian) => (
+                      <div
+                        className={`w-full flex flex-col p-2 rounded-xl items-center ${
+                          guardian.approvedStatus === "hold"
+                            ? "bg-red-200"
+                            : guardian.approvedStatus === "rejected"
+                            ? "bg-red-600"
+                            : guardian.approvedStatus === "approved"
+                            ? "bg-green-600"
+                            : ""
+                        }`}
+                      >
+                        <section className="flex justify-between w-full items-center">
+                          <div className="flex flex-col gap-1  ">
+                            <p>Guardian - {guardian.guardianAddress}</p>
+                            <p>Assigned By - {guardian.assignedBy}</p>
+                          </div>
+                          <p className="text-sm font-extrabold">
+                            {guardian.approvedStatus === "hold"
+                              ? "HOLD"
+                              : guardian.approvedStatus === "rejected"
+                              ? "REJECTED"
+                              : guardian.approvedStatus === "approved"
+                              ? "APPROVED"
+                              : ""}
+                          </p>
+                        </section>
+
+                        <div className="mt-3 flex justify-center items-center gap-4">
+                          <button className="p-2 bg-blue-700 text-white rounded-xl">
+                            Approve
+                          </button>
+                          <button className="p-2 bg-red-700 text-white rounded-xl">
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  : ""}
+              </div>
             </div>
           ) : (
             ""
