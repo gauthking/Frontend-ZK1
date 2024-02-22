@@ -19,7 +19,7 @@ export const addGuardianWithThreshold = createAsyncThunk(
     "scr/addGuardianCall",
     async (smartAccountAddress: string) => {
         try {
-            const getAccount = await axios.get(`/api/account/${smartAccountAddress}`);
+            const getAccount = await axios.get(`/api/account/getAccount/${smartAccountAddress}`);
             console.log("getAccount", getAccount);
 
             const provider = new Provider("https://zksync2-testnet.zksync.dev");

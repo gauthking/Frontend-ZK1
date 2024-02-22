@@ -2,29 +2,8 @@ import { Dispatch, SetStateAction } from "react";
 import SafeAccountInfo from "./SafeAccountInfo";
 import TransactionList from "./TransactionList";
 import { store } from "@/redux/store";
+import { sidebarProps, txnInterface } from "@/app/interfaces";
 
-interface txnInterface {
-  transactionType: string;
-  requiredThreshold: number;
-  currentSignCount: number;
-  signedOwners: any;
-  txnAmount: number;
-  recipientAddress: string;
-  paymaster: boolean;
-  _id: string;
-  __v: number;
-}
-
-interface sidebarProps {
-  address: string;
-  safeName: string;
-  threshold: number;
-  setHandleCreateTxnComponent: Dispatch<SetStateAction<boolean>>;
-  handleCreateTxnComponent: boolean;
-  handleSignTxnComponent: boolean;
-  setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
-  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
-}
 function Sidebar({
   address,
   safeName,

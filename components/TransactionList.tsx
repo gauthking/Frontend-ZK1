@@ -7,26 +7,7 @@ import React, {
 } from "react";
 import axios from "../app/axios";
 import { Box, CircularProgress } from "@mui/material";
-
-interface txnInterface {
-  transactionType: string;
-  requiredThreshold: number;
-  currentSignCount: number;
-  signedOwners: any;
-  txnAmount: number;
-  recipientAddress: string;
-  paymaster: boolean;
-  _id: string;
-  __v: number;
-}
-
-interface transactionListInterface {
-  address: string;
-  threshold: number;
-  setTxnPayload: Dispatch<SetStateAction<txnInterface | undefined>>;
-  setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
-  handleSignTxnComponent: boolean;
-}
+import { transactionListInterface, txnInterface } from "@/app/interfaces";
 
 function TransactionList({
   address,
@@ -84,15 +65,18 @@ function TransactionList({
                     {txn.currentSignCount}
                   </p>
                   <p className="text-yellow-50 text-xs flex gap-2">
-                    <p className="font-bold text-xs">req:</p> {threshold}
+                    <p className="font-bold text-xs">req:</p>{" "}
+                    {txn.currentSetAccountThreshold}
                   </p>
                 </div>
                 <div className="flex gap-2 items-center justify-center text-yellow-50 mt-2">
                   <p className="text-xs font-bold">status:</p>{" "}
                   <p className="text-xs">
-                    {threshold === txn.currentSignCount
+                    {txn.currentSetAccountThreshold === txn.currentSignCount
                       ? "completed"
-                      : txn.currentSignCount + "/" + threshold}
+                      : txn.currentSignCount +
+                        "/" +
+                        txn.currentSetAccountThreshold}
                   </p>
                 </div>
               </div>

@@ -17,7 +17,7 @@ function Account() {
       setLoader(true);
       const req = await axios.get("/api/account/");
       let temp = [];
-      if(req.data !==0){
+      if (req.data !== 0) {
         for (let i = 0; i < req.data.length; i++) {
           const owners = req.data[i].owners;
           for (let j = 0; j < owners.length; j++) {

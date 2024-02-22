@@ -8,7 +8,7 @@ const guardianStorageBytecodeHash = "0x0100018dff71995123c2038837d1d2514a572c810
 const socialRecoveryModuleBytecodeHash = "0x01000a211886d67c075548275a211c6c17133b18967a86d828327ee59832e8a0";
 
 const contractDeployerAddress: any = "0x0000000000000000000000000000000000008006";
-const aaFactoryAddress: any = "0x1C56Eb40700610932B010D5EC6C277eDcF2BA371";
+const aaFactoryAddress: any = "0xd8C4F4AB426E5A8eAe5dEe703eb46Bca6aB3E3Ce";
 
 interface deployments {
     guardianAddress: string;
@@ -104,7 +104,7 @@ export const deployAll = createAsyncThunk(
         try {
             const aaFactory = new ethers.Contract(aaFactoryAddress, AAArtifact.abi, signer);
             console.log("threshold", store.getState().deployContracts.threshold)
-            
+
             const createAccounts = await aaFactory.deployAccount(salt, owners, store.getState().deployContracts.threshold, {
                 gasLimit: 5000000
             });

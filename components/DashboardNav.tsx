@@ -43,7 +43,7 @@ function DashboardNav({ setOpen, accountAddress }: DashboardNavProps) {
   };
 
   const getOwners = async () => {
-    const req = await axios.get(`/api/account/${accountAddress}`);
+    const req = await axios.get(`/api/account/getAccount/${accountAddress}`);
     setOwners(req.data.owners);
   };
 

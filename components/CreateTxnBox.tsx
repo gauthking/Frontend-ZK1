@@ -1,16 +1,11 @@
 "use client";
+import { CreateTxnBoxProps } from "@/app/interfaces";
 import axios from "../app/axios";
 import React, { useState } from "react";
-
-interface CreateTxnBoxProps {
-  safeAddress: string;
-  eoaAddress: string | null;
-}
 
 function CreateTxnBox({ safeAddress, eoaAddress }: CreateTxnBoxProps) {
   const [txnAmount, setTxnAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
-  // const [threshold, setThreshold] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [paymaster, setPaymaster] = useState<boolean>(false);
   const [loader, setLoader] = useState<boolean>(false);
@@ -39,7 +34,7 @@ function CreateTxnBox({ safeAddress, eoaAddress }: CreateTxnBoxProps) {
   };
   console.log(paymaster);
   return (
-    <div className="createTxn text-yellow-50 m-auto p-10 bg-gradient-to-b from-slate-950 via-slate-950 to-gray-900 border-4 border-gray-800 rounded-xl shadow-sm shadow-slate-900 flex flex-col justify-center items-center">
+    <div className="createTxn text-yellow-50 m-auto p-10 bg-gradient-to-b from-slate-950 via-slate-950 to-gray-900 border-4 border-gray-500 rounded-xl shadow-sm shadow-slate-900 flex flex-col justify-center items-center">
       <h1 className="text-3xl text-blue-50 font-kanit_bold mb-12 p-2 rounded-xl w-full text-center">
         Create A Transaction
       </h1>

@@ -3,24 +3,8 @@ import CreateTxnBox from "@/components/CreateTxnBox";
 import Sidebar from "@/components/Sidebar";
 import SignTxnBox from "@/components/SignTxnBox";
 import { useEffect, useState } from "react";
-import { AppDispatch, RootState, store } from "@/redux/store";
-import { CHAIN_NAMESPACES } from "@web3auth/base";
-import { Web3Auth } from "@web3auth/modal";
-import {
-  OpenloginAdapter,
-  OPENLOGIN_NETWORK,
-} from "@web3auth/openlogin-adapter";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  checkETHEOABalance,
-  getPrivateKey,
-  getPublicKey,
-  setIsLoggedIn,
-  setWProvider,
-  setWeb3Auth,
-  transferETHToEOA,
-} from "@/redux/EOAConnectSlice";
-import { TorusWalletConnectorPlugin } from "@web3auth/torus-wallet-connector-plugin";
+import { RootState, store } from "@/redux/store";
+import { useSelector } from "react-redux";
 import Image from "next/image";
 import zklogo from "../../../../assets/zklogo.png";
 import DashboardNav from "@/components/DashboardNav";
@@ -31,34 +15,9 @@ import { CircularProgress } from "@mui/material";
 import { Wallet, ethers } from "ethers";
 import { Provider } from "zksync-web3";
 import erc20ABI from "../../../../contractABIs/ERC20.json";
-import {
-  addGuardianWithThreshold,
-  setGuardianAddress,
-  setGuardianThreshold,
-} from "@/redux/guardianSlice";
 
-interface txnInterface {
-  transactionType: string;
-  requiredThreshold: number;
-  currentSignCount: number;
-  signedOwners: any;
-  txnAmount: number;
-  recipientAddress: string;
-  paymaster: boolean;
-  _id: string;
-  __v: number;
-}
-
-interface accountGuardians {
-  safeAddress: string;
-  assignedBy: string;
-  guardianAddress: string;
-  currentSetThreshold: number;
-  approvalSignatures: any[];
-  approvedStatus: string;
-  rejectedBy: string;
-  assignedAt: any;
-}
+import ProviderConnect from "@/components/ProviderConnect";
+import { accountGuardians, txnInterface } from "@/app/interfaces";
 
 interface scrSchemaInterface {
   smartAccount: string;
@@ -96,6 +55,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
   const [gThreshold, setGThreshold] = useState<string | null>("");
   const [scrPayload, setScrPayload] = useState<scrSchemaInterface>();
   const [guardians, setGuardians] = useState<accountGuardians[]>([]);
+  const [signLoader, setSignLoader] = useState<boolean>(false);
 
   const { address, eoaBalanceETH } = useSelector(
     (state: RootState) => state.eoaConnect
@@ -103,114 +63,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
   const handleClose = () => setOpen(false);
 
-  const dispatch = useDispatch<AppDispatch>();
-
-  const clientId: any = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT;
-
   useEffect(() => {
-    const init = async () => {
-      try {
-        const web3auth = new Web3Auth({
-          clientId,
-          chainConfig: {
-            chainNamespace: CHAIN_NAMESPACES.EIP155,
-            chainId: "0x118",
-            rpcTarget: "https://testnet.era.zksync.dev",
-          },
-
-          uiConfig: {
-            appName: "ZKWALLET",
-            // appLogo: "https://web3auth.io/images/w3a-L-Favicon-1.svg", // Your App Logo Here
-            theme: {
-              primary: "red",
-            },
-            mode: "dark",
-            logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
-            logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
-            defaultLanguage: "en", // en, de, ja, ko, zh, es, fr, pt, nl
-            loginGridCol: 3,
-            primaryButton: "externalLogin", // "externalLogin" | "socialLogin" | "emailLogin"
-          },
-          web3AuthNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET,
-        });
-
-        dispatch(setWeb3Auth(web3auth));
-
-        const openloginAdapter = new OpenloginAdapter({
-          loginSettings: {
-            mfaLevel: "optional",
-          },
-          adapterSettings: {
-            uxMode: "redirect", // "redirect" | "popup"
-            whiteLabel: {
-              logoLight: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
-              logoDark: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
-              defaultLanguage: "en", // en, de, ja, ko, zh, es, fr, pt, nl
-              mode: "dark", // whether to enable dark, light or auto mode. defaultValue: auto [ system theme]
-            },
-            loginConfig: {
-              google: {
-                verifier: "zkwallet-google-provider",
-                typeOfLogin: "google",
-                clientId: process.env.NEXT_PUBLIC_GOOGLECLIENTID, // this should be the google client id. pls pass it
-              },
-            },
-            mfaSettings: {
-              deviceShareFactor: {
-                enable: true,
-                priority: 1,
-                mandatory: true,
-              },
-              backUpShareFactor: {
-                enable: true,
-                priority: 2,
-                mandatory: false,
-              },
-              socialBackupFactor: {
-                enable: true,
-                priority: 3,
-                mandatory: false,
-              },
-              passwordFactor: {
-                enable: true,
-                priority: 4,
-                mandatory: false,
-              },
-            },
-          },
-        });
-        web3auth.configureAdapter(openloginAdapter);
-
-        const torusPlugin = new TorusWalletConnectorPlugin({
-          torusWalletOpts: {},
-          walletInitOptions: {
-            whiteLabel: {
-              theme: { isDark: true, colors: { primary: "#00a8ff" } },
-              logoDark: "https://web3auth.io/images/w3a-L-Favicon-1.svg",
-              logoLight: "https://web3auth.io/images/w3a-D-Favicon-1.svg",
-            },
-            useWalletConnect: true,
-            enableLogging: true,
-          },
-        });
-        await web3auth.addPlugin(torusPlugin);
-        dispatch(setWeb3Auth(web3auth));
-        await web3auth.initModal();
-        dispatch(setWProvider(web3auth.provider));
-
-        if (web3auth.connected) {
-          dispatch(setIsLoggedIn(true));
-          await dispatch(getPublicKey(store.getState().eoaConnect.provider));
-          await dispatch(getPrivateKey(store.getState().eoaConnect.provider));
-          await dispatch(
-            checkETHEOABalance(store.getState().eoaConnect.provider)
-          );
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    init();
     const newAddress: any = store.getState().eoaConnect.address;
     setEoaAddress(newAddress);
     checkSCRStatus();
@@ -221,26 +74,73 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
   console.log("eth balance - ", eoaBalanceETH);
 
+  const approveForGuardian = async (guardianAddress: string) => {
+    try {
+      const getTxnHash = await axios.post("/api/account/getGuardianCallHash", {
+        safeAddress: params.slug[1],
+        guardianAddress: guardianAddress,
+      });
+      console.log(getTxnHash);
+      const signer_pkey: any = store.getState().eoaConnect.pkey;
+      const signer = new Wallet(signer_pkey);
+      console.log(getTxnHash.data.guardianHash);
+      const signature = ethers.utils.joinSignature(
+        signer._signingKey().signDigest(getTxnHash.data.guardianHash)
+      );
+      console.log("signature", signature);
+
+      const signForApproval = await axios.post(
+        "/api/account/signForGuardianApproval",
+        {
+          signedDigest: signature,
+          signerAddress: address,
+          safeAddress: params.slug[1],
+          guardianAddress: guardianAddress,
+        }
+      );
+      await getGuadiansAcc();
+      alert("Signed for guardian approval successfully");
+    } catch (error) {
+      console.log(
+        "An error occured while calling approveforguardian function",
+        error
+      );
+    }
+  };
+
+  // const rejectApprovalGuardian = async (guardianAddress: string) => {
+  //   try {
+  //     const cancelCall = await axios.post("/api/account/cancelGuardian", {
+  //       guardianAddress: guardianAddress,
+  //       safeAddress: params.slug[1],
+  //       rejectedByAddress: address,
+  //     });
+  //     alert("rejected the guardian");
+  //   } catch (error) {
+  //     console.log(
+  //       "An error occured while calling the cancel guardian call - ",
+  //       error
+  //     );
+  //   }
+  // };
+
   const addGuardian = async () => {
     if (gAddress !== null && gThreshold !== null) {
       try {
-        // if (parseInt(eoaBalanceETH) < 0.002) {
-        //   alert(
-        //     "Funds for contract calls are low in this account... Transfering 0.02ETH from WHALE wallet.."
-        //   );
-        //   await dispatch(
-        //     transferETHToEOA(store.getState().eoaConnect.pkey)
-        //   ).then(() =>
-        //     alert(
-        //       "Funds have been successfully transferred from whale to the signer"
-        //     )
-        //   );
-        // }
-        // dispatch(setGuardianThreshold(gThreshold));
-        // dispatch(setGuardianAddress(gAddress));
-        // const addGuardianCall = await dispatch(
-        //   addGuardianWithThreshold(params.slug[1])
-        // );
+        const getAccount = await axios.get(
+          `/api/account/getAccount/${params.slug[1]}`
+        );
+        if (
+          parseInt(gThreshold) >
+          getAccount.data.accountGuardians.length + 1
+        ) {
+          alert(
+            "Threshold is greater than the number of guardians already/are going to be present in the smart account. If you are adding a guardian for the first time then keep the threshold as 1"
+          );
+          setGThreshold("");
+          setGAddress("");
+          return;
+        }
         const updateDB = await axios
           .post("/api/account/addGuardian", {
             safeAddress: params.slug[1],
@@ -276,9 +176,12 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
   const getGuadiansAcc = async () => {
     try {
-      const getAccount = await axios.get(`/api/account/${params.slug[1]}`);
+      const getAccount = await axios.get(
+        `/api/account/getAccount/${params.slug[1]}`
+      );
       console.log("getAccount", getAccount);
       setGuardians(getAccount.data.accountGuardians);
+
       console.log("guardians set");
     } catch (error) {
       console.log("An error occured at getting guardians - ", error);
@@ -342,7 +245,10 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
 
   const signSCRTxn = async () => {
     try {
-      const getAccount = await axios.get(`/api/account/${params.slug[1]}`);
+      setSignLoader(true);
+      const getAccount = await axios.get(
+        `/api/account/getAccount/${params.slug[1]}`
+      );
       console.log("getAccount", getAccount);
       const scrAddress = getAccount.data.socialRecoveryModuleAddress;
       const getTxnHash = await axios.post("/api/account/getTxnHash", {
@@ -363,6 +269,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
         scrAddress: scrAddress,
       });
       console.log(sign.data);
+      setSignLoader(false);
       checkSCRStatus();
     } catch (error) {
       alert("An error occured while executing the signSCRTxn method");
@@ -376,8 +283,23 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setScrPayload(req.data);
   };
 
+  const getMaxSetThreshold = () => {
+    let setThreshold = 1;
+    if (guardians.length > 0) {
+      for (let i = 0; i < guardians.length; i++) {
+        if (guardians[i].approvedStatus === "approved") {
+          setThreshold += 1;
+        }
+      }
+    } else {
+      return setThreshold;
+    }
+    return setThreshold;
+  };
+
   return (
     <>
+      <ProviderConnect />
       <Modal
         open={open}
         onClose={handleClose}
@@ -480,7 +402,19 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
                   onClick={() => signSCRTxn()}
                   className="mt-6 text-sm font-kanit_bold text-slate-100 bg-blue-950 rounded-xl  h-fit p-2 hover:scale-105 transition-all ease-in-out hover:bg-slate-800"
                 >
-                  Sign
+                  {signLoader ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <CircularProgress size={"22px"} />
+                    </Box>
+                  ) : (
+                    "Sign"
+                  )}
                 </button>
               ) : (
                 <p className="text-sm text-slate-100 bg-slate-800 rounded-xl p-2 w-fit">
@@ -517,13 +451,17 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
                 Add
               </button>
               <hr />
+              <div className="currentthreshold float right p-2 m-2 text-slate-200 font-medium">
+                Max Threshold that can be set -{getMaxSetThreshold()}
+                {guardians.some((s) => s.approvedStatus)}
+              </div>
               <div className="flex flex-col gap-2 items-center my-4 w-full">
                 {guardians.length !== 0
                   ? guardians.map((guardian) => (
                       <div
                         className={`w-full flex flex-col p-2 rounded-xl items-center ${
                           guardian.approvedStatus === "hold"
-                            ? "bg-red-200"
+                            ? "bg-gray-200"
                             : guardian.approvedStatus === "rejected"
                             ? "bg-red-600"
                             : guardian.approvedStatus === "approved"
@@ -546,15 +484,50 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
                               : ""}
                           </p>
                         </section>
-
-                        <div className="mt-3 flex justify-center items-center gap-4">
-                          <button className="p-2 bg-blue-700 text-white rounded-xl">
-                            Approve
-                          </button>
-                          <button className="p-2 bg-red-700 text-white rounded-xl">
-                            Reject
-                          </button>
-                        </div>
+                        {guardian.approvedStatus !== "rejected" ? (
+                          <div className="mt-3 flex justify-center items-center gap-4">
+                            <button
+                              disabled={
+                                guardian.approvalSignatures.some(
+                                  (s: any) => s.signerAddress === address
+                                )
+                                  ? true
+                                  : false
+                              }
+                              onClick={() =>
+                                approveForGuardian(guardian.guardianAddress)
+                              }
+                              className="p-2 bg-blue-700 text-white rounded-xl"
+                            >
+                              {guardian.approvalSignatures.some(
+                                (s: any) => s.signerAddress === address
+                              )
+                                ? "Approved"
+                                : "Approve"}
+                            </button>
+                            {/* <button
+                              onClick={() =>
+                                rejectApprovalGuardian(guardian.guardianAddress)
+                              }
+                              className="p-2 bg-red-700 text-white rounded-xl"
+                            >
+                              Reject
+                            </button> */}
+                          </div>
+                        ) : (
+                          ""
+                        )}
+                        {guardian.approvedStatus !== "rejected" ? (
+                          <div className="mr-auto w-full my-2 p-2">
+                            <p>
+                              Signatures Received :{" "}
+                              {guardian.approvalSignatures.length} /{" "}
+                              {params.slug[2]}
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
                       </div>
                     ))
                   : ""}

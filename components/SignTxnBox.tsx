@@ -2,24 +2,7 @@ import { store } from "@/redux/store";
 import axios from "../app/axios";
 import { Dispatch, SetStateAction } from "react";
 import { Wallet, ethers } from "ethers";
-
-interface txnInterface {
-  transactionType: string;
-  currentSignCount: number;
-  signedOwners: any;
-  txnAmount: number;
-  recipientAddress: string;
-  paymaster: boolean;
-  _id: string;
-  __v: number;
-}
-
-interface SignTxnBoxProps {
-  txnData: txnInterface | undefined;
-  setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
-  safeAddress: string;
-  threshold: number;
-}
+import { SignTxnBoxProps } from "@/app/interfaces";
 
 function SignTxnBox({
   txnData,
@@ -62,6 +45,8 @@ function SignTxnBox({
       if (signaturePost.status === 200) {
         alert("Signed Transaction Succesfully. Click Ok to refresh the page");
         window.location.reload();
+      } else if (signaturePost.status === 404) {
+        alert(`error occured while signing - ${signaturePost.data.message}`);
       }
     } catch (error) {
       console.log("An error occured while signing the tranasction - ", error);
@@ -69,7 +54,7 @@ function SignTxnBox({
   };
 
   return (
-    <div className="createTxn text-yellow-50 m-auto p-10 w-1/3 bg-gradient-to-b from-slate-950 via-slate-950 to-gray-900 border-4 border-gray-800 rounded-xl shadow-sm shadow-slate-900 flex flex-col justify-center items-center">
+    <div className="createTxn text-yellow-50 m-auto p-10 w-1/3 bg-gradient-to-b from-slate-950 via-slate-950 to-gray-900 border-4 border-gray-500 rounded-xl shadow-sm shadow-slate-900 flex flex-col justify-center items-center">
       <button
         onClick={() => setHandleSignTxnComponent(false)}
         className="text-blue-300 font-bold ml-auto"
@@ -137,7 +122,7 @@ function SignTxnBox({
       </div>
       {threshold === txnData?.currentSignCount ? (
         <p className="font-kanit_bold mt-6 bg-slate-900 p-2 rounded-xl">
-          Transaction Completed - {txnData?.txnAmount}{" "}
+          Transaction Completed - {(txnData?.txnAmount / 10 ** 18).toFixed(18)}{" "}
           {txnData?.transactionType === "mint" ? "minted" : "transferred"} to{" "}
           {txnData?.recipientAddress}
         </p>

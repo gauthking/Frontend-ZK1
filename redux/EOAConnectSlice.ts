@@ -90,6 +90,7 @@ export const getPrivateKey = createAsyncThunk(
     'getPrivateKey/privateKey',
     async (provider: any) => {
         const rpc = new RPC(provider);
+        console.log("rpc - ", rpc)
         const privateKey = await rpc.getPrivateKey();
         return privateKey;
     }
