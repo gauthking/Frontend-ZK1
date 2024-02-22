@@ -1,10 +1,10 @@
 import { store } from "@/redux/store";
 import axios from "../app/axios";
-import { Dispatch, SetStateAction } from "react";
 import { Wallet, ethers } from "ethers";
 import { SignTxnBoxProps } from "@/app/interfaces";
 
 function SignTxnBox({
+  owners,
   txnData,
   setHandleSignTxnComponent,
   safeAddress,
@@ -99,7 +99,8 @@ function SignTxnBox({
             )}
           </div>
         </div>
-        {!txnData?.signedOwners.some(
+        {owners.includes(store.getState().eoaConnect.address?.toLowerCase()) &&
+        !txnData?.signedOwners.some(
           (s: any) => s.signerAddress === store.getState().eoaConnect.address
         ) ? (
           <button
@@ -117,7 +118,7 @@ function SignTxnBox({
           ) ? (
           "User has already signed"
         ) : (
-          ""
+          "This transaction was signed by a previous owner(s). New owners cannot sign this again"
         )}
       </div>
       {threshold === txnData?.currentSignCount ? (

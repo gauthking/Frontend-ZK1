@@ -41,6 +41,7 @@ export interface transactionListInterface {
 }
 
 export interface SignTxnBoxProps {
+    owners: Array<string | null | undefined>
     txnData: txnInterface | undefined;
     setHandleSignTxnComponent: Dispatch<SetStateAction<boolean>>;
     safeAddress: string;

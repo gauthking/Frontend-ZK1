@@ -56,6 +56,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
   const [scrPayload, setScrPayload] = useState<scrSchemaInterface>();
   const [guardians, setGuardians] = useState<accountGuardians[]>([]);
   const [signLoader, setSignLoader] = useState<boolean>(false);
+  const [owners, setOwners] = useState([]);
 
   const { address, eoaBalanceETH } = useSelector(
     (state: RootState) => state.eoaConnect
@@ -68,11 +69,16 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
     setEoaAddress(newAddress);
     checkSCRStatus();
     checkSmartAccountBalance();
-    ``;
     getGuadiansAcc();
+    getOwners();
   }, []);
 
   console.log("eth balance - ", eoaBalanceETH);
+
+  const getOwners = async () => {
+    const req = await axios.get(`/api/account/getAccount/${params.slug[1]}`);
+    setOwners(req.data.owners);
+  };
 
   const approveForGuardian = async (guardianAddress: string) => {
     try {
@@ -556,6 +562,7 @@ const Page = ({ params }: { params: { slug: string[] } }) => {
         ) : handleCreateTxnComponent === false &&
           handleSignTxnComponent === true ? (
           <SignTxnBox
+            owners={owners}
             txnData={txnPayload}
             setHandleSignTxnComponent={setHandleSignTxnComponent}
             safeAddress={params.slug[1]}
